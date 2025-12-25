@@ -1,4 +1,4 @@
-local dll = "./src/external/jolt/bin/"
+local dll = "./"
 local ffi = zune.ffi
 local platform = zune.platform
 
