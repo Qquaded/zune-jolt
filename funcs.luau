@@ -13,7 +13,27 @@ local funcs = {
 	},
 	JPH_BroadPhaseLayerInterfaceTable_MapObjectToBroadPhaseLayer = {
 		returns = ffi.types.void,
+		args = { ffi.types.pointer, ffi.types.u32, ffi.types.u32 },
+	},
+	JPH_Quat_GetAxisAngle = {
+		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+	},
+	JPH_Vec3_DotProduct = {
+		returns = ffi.types.float,
+		args = { ffi.types.pointer, ffi.types.pointer },
+	},
+	JPH_Quat_Dot = {
+		returns = ffi.types.float,
+		args = { ffi.types.pointer, ffi.types.pointer },
+	},
+	JPH_HingeConstraint_GetTotalLambdaRotation = {
+		returns = ffi.types.float,
+		args = { ffi.types.pointer },
+	},
+	JPH_SliderConstraint_GetTotalLambdaPosition = {
+		returns = ffi.types.float,
+		args = { ffi.types.pointer },
 	},
 	JPH_ObjectLayerPairFilterMask_GetObjectLayer = {
 		returns = ffi.types.pointer,
@@ -21,17 +41,53 @@ local funcs = {
 	},
 	JPH_PhysicsSystem_Create = {
 		returns = ffi.types.pointer,
-		args = {},
+		args = { ffi.types.pointer }, -- Takes JPH_PhysicsSystemSettings*
+	},
+
+	JPH_BodyCreationSettings_Create2 = {
+		returns = ffi.types.pointer,
+		args = {
+			ffi.types.pointer, -- shape
+			ffi.types.pointer, -- position (RVec3)
+			ffi.types.pointer, -- rotation (Quat)
+			ffi.types.u32, -- motion type
+			ffi.types.u32, -- object layer
+		},
+	},
+	JPH_BoxShape_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.float }, -- halfExtents (Vec3*), convexRadius
+	},
+
+	JPH_BodyCreationSettings_Create3 = {
+		returns = ffi.types.pointer,
+		args = {
+			ffi.types.pointer, -- shape
+			ffi.types.pointer, -- position (RVec3*)
+			ffi.types.pointer, -- rotation (Quat*) - can be null
+			ffi.types.u8, -- motion type
+			ffi.types.u16, -- object layer
+		},
+	},
+	JPH_BoxShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.float },
+	},
+
+	JPH_BoxShapeSettings_CreateShape = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer },
 	},
 	JPH_ObjectLayerPairFilterMask_GetGroup = { returns = ffi.types.u32, args = { ffi.types.pointer } },
 	JPH_ObjectLayerPairFilterMask_GetMask = { returns = ffi.types.u32, args = { ffi.types.pointer } },
+
 	JPH_ObjectLayerPairFilterTable_DisableCollision = {
 		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+		args = { ffi.types.pointer, ffi.types.u32, ffi.types.u32 },
 	},
 	JPH_ObjectLayerPairFilterTable_EnableCollision = {
 		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+		args = { ffi.types.pointer, ffi.types.u32, ffi.types.u32 },
 	},
 	JPH_ObjectLayerPairFilterTable_ShouldCollide = {
 		returns = ffi.types.u8,
@@ -42,15 +98,12 @@ local funcs = {
 	JPH_PhysicsSystem_SetPhysicsSettings = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_PhysicsSystem_GetPhysicsSettings = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_PhysicsSystem_OptimizeBroadPhase = { returns = ffi.types.void, args = { ffi.types.pointer } },
-	JPH_PhysicsSystem_Update = {
-		returns = ffi.types.pointer,
-		args = { ffi.types.pointer, ffi.types.float, ffi.types.pointer, ffi.types.pointer },
-	},
 	JPH_PhysicsSystem_SetContactListener = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_PhysicsSystem_SetBodyActivationListener = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer },
 	},
+
 	JPH_PhysicsSystem_SetSimShapeFilter = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_PhysicsSystem_WereBodiesInContact = {
 		returns = ffi.types.u8,
@@ -104,10 +157,6 @@ local funcs = {
 	JPH_Math_Sin = { returns = ffi.types.float, args = { ffi.types.float } },
 	JPH_Math_Cos = { returns = ffi.types.float, args = { ffi.types.float } },
 	JPH_Quat_FromTo = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer } },
-	JPH_Quat_GetAxisAngle = {
-		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.float },
-	},
 	JPH_Quat_GetEulerAngles = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_Quat_RotateAxisX = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_Quat_RotateAxisY = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
@@ -127,7 +176,6 @@ local funcs = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.float, ffi.types.pointer },
 	},
-	JPH_Quat_Dot = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.float } },
 	JPH_Quat_Conjugated = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_Quat_GetTwist = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer } },
 	JPH_Quat_GetSwingTwist = {
@@ -160,7 +208,6 @@ local funcs = {
 	JPH_Vec3_Abs = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_Vec3_Length = { returns = ffi.types.float, args = { ffi.types.pointer } },
 	JPH_Vec3_LengthSquared = { returns = ffi.types.float, args = { ffi.types.pointer } },
-	JPH_Vec3_DotProduct = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.float } },
 	JPH_Vec3_Normalize = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_Vec3_Add = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer } },
 	JPH_Vec3_Subtract = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer } },
@@ -785,10 +832,6 @@ local funcs = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer },
 	},
-	JPH_HingeConstraint_GetTotalLambdaRotation = {
-		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.float },
-	},
 	JPH_HingeConstraint_GetTotalLambdaRotationLimits = { returns = ffi.types.float, args = { ffi.types.pointer } },
 	JPH_HingeConstraint_GetTotalLambdaMotor = { returns = ffi.types.float, args = { ffi.types.pointer } },
 	JPH_SliderConstraintSettings_Init = { returns = ffi.types.void, args = { ffi.types.pointer } },
@@ -831,10 +874,6 @@ local funcs = {
 	JPH_SliderConstraint_SetLimitsSpringSettings = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer },
-	},
-	JPH_SliderConstraint_GetTotalLambdaPosition = {
-		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.float },
 	},
 	JPH_SliderConstraint_GetTotalLambdaPositionLimits = { returns = ffi.types.float, args = { ffi.types.pointer } },
 	JPH_SliderConstraint_GetTotalLambdaRotation = {
@@ -998,7 +1037,7 @@ local funcs = {
 	JPH_BodyInterface_DestroyBody = { returns = ffi.types.void, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_BodyInterface_CreateAndAddBody = {
 		returns = ffi.types.pointer,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.u32 },
 	},
 	JPH_BodyInterface_DestroyBodyWithoutID = {
 		returns = ffi.types.void,
@@ -1021,6 +1060,100 @@ local funcs = {
 	JPH_BodyInterface_RemoveAndDestroyBody = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer },
+	},
+	JPH_ObjectLayerPairFilterTable_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.u32 }, -- number of layers
+	},
+	JPH_BroadPhaseLayerInterfaceTable_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.u32, ffi.types.u32 }, -- number of object layers, number of broadphase layers
+	},
+	-- JPH_CAPI JPH_PhysicsUpdateError JPH_PhysicsSystem_Update(JPH_PhysicsSystem* system, float deltaTime, int collisionSteps, JPH_JobSystem* jobSystem);
+
+	JPH_PhysicsSystem_Update = {
+		returns = ffi.types.void,
+		args = {
+			ffi.types.pointer,
+			ffi.types.float,
+			ffi.types.i32,
+			ffi.types.pointer,
+		},
+	},
+
+	JPH_ObjectVsBroadPhaseLayerFilterTable_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.u32, ffi.types.pointer, ffi.types.u32 },
+		-- (broadPhaseInterface, numBroadPhaseLayers, objectLayerPairFilter, numObjectLayers)
+	},
+	JPH_JobSystemThreadPool_Create = {
+		returns = ffi.types.pointer, -- JPH_JobSystem*
+		args = { ffi.types.pointer }, -- number of threads
+	},
+
+	JPH_SphereShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.float },
+	},
+
+	-- Capsule Shape
+	JPH_CapsuleShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.float, ffi.types.float },
+	},
+
+	JPH_CylinderShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.float, ffi.types.float, ffi.types.float },
+	},
+
+	-- Get Body Interface
+	JPH_PhysicsSystem_GetBodyInterface = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer },
+	},
+
+	-- Body interface position and rotation getters
+	JPH_BodyInterface_GetPositionAndRotation = {
+		returns = ffi.types.void,
+		args = {
+			ffi.types.pointer, -- bodyInterface
+			ffi.types.pointer, -- bodyId
+			ffi.types.pointer, -- position (JPH_RVec3*)
+			ffi.types.pointer, -- rotation (JPH_Quat*)
+		},
+	},
+	-- Mesh shape (for complex geometry)
+	JPH_MeshShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.u32 },
+	},
+
+	-- Convex Hull shape
+	JPH_ConvexHullShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.u32, ffi.types.float },
+	},
+
+	-- Rotated/Translated shape (for offsetting shapes)
+	JPH_RotatedTranslatedShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+	},
+
+	-- Scaled shape
+	JPH_ScaledShapeSettings_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.pointer },
+	},
+
+	JPH_Character_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+	},
+	JPH_CharacterVirtual_Create = {
+		returns = ffi.types.pointer,
+		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
 	},
 	JPH_BodyInterface_IsAdded = { returns = ffi.types.u8, args = { ffi.types.pointer, ffi.types.pointer } },
 	JPH_BodyInterface_GetBodyType = { returns = ffi.types.pointer, args = { ffi.types.pointer, ffi.types.pointer } },
@@ -1053,7 +1186,7 @@ local funcs = {
 	},
 	JPH_BodyInterface_SetPosition = {
 		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
+		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.u32 },
 	},
 	JPH_BodyInterface_GetPosition = {
 		returns = ffi.types.void,
@@ -1074,10 +1207,6 @@ local funcs = {
 	JPH_BodyInterface_SetPositionAndRotationWhenChanged = {
 		returns = ffi.types.void,
 		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
-	},
-	JPH_BodyInterface_GetPositionAndRotation = {
-		returns = ffi.types.void,
-		args = { ffi.types.pointer, ffi.types.pointer, ffi.types.pointer, ffi.types.pointer },
 	},
 	JPH_BodyInterface_SetPositionRotationAndVelocity = {
 		returns = ffi.types.void,
